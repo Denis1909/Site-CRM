@@ -1,0 +1,95 @@
+// backend/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --------------------------------------------------------------------------------------
+// Modelos de Dados para o CRM
+// --------------------------------------------------------------------------------------
+
+// Modelo de Usuário (para login, cadastro, vendedor, gerente)
+model User {
+  id           String    @id @default(uuid()) // ID único para o usuário (UUID)
+  firstName    String
+  middleName   String?   // Opcional
+  lastName     String
+  email        String    @unique
+  password     String    // Senha hashada (NUNCA armazene senhas em texto puro!)
+  userType     String    // 'client', 'seller', 'manager'
+  branch       String    // 'matriz', 'filial2', 'filial3'
+  managerId    String?   // ID do gerente, se houver (para hierarquia)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relacionamento com Vendas (um usuário pode ser vendedor de várias vendas)
+  sales        Sale[]    @relation("UserSales")
+}
+
+// Modelo de Parceiro (Pessoa Física ou Jurídica - PF/PJ)
+model Partner {
+  id                 String    @id @default(uuid()) // ID único para o parceiro
+  partnerCategory    String    // 'PJ' ou 'PF'
+
+  // Campos Comuns
+  name               String    // Razão Social (PJ) ou Nome do Contato (PF)
+  cnpjCpf            String    @unique // CNPJ (PJ) ou CPF (PF)
+  ieRg               String?   // Inscrição Estadual (PJ) ou RG (PF) - Opcional
+
+  // Campos Específicos de PJ
+  fantasyName        String?   // Nome Fantasia (apenas para PJ)
+  legalResponsible   String?   // Responsável Legal (apenas para PJ)
+
+  // Campos Específicos de PF
+  phone              String?   // Telefone (apenas para PF)
+  email              String?   @unique // E-mail (apenas para PF)
+
+  // Endereço (para PJ e PF)
+  street             String
+  number             String
+  neighborhood       String
+  city               String
+  state              String
+  zipCode            String
+
+  // Informações Financeiras (mais comum em PF, mas pode ser expandido para PJ)
+  paymentTerms       String?   // Condição de Pagamento
+  industry           String?   // Setor/Indústria
+  observations       String?
+
+  status             String    @default("Lead") // 'Lead', 'Cliente', 'Ex-Cliente', etc.
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Relacionamento com Vendas (um parceiro pode ter várias vendas associadas)
+  sales              Sale[]    @relation("PartnerSales")
+}
+
+// Modelo de Venda
+model Sale {
+  id                 String    @id @default(uuid()) // ID único para a venda
+  productId          String?   // ID do produto/serviço, se houver um catálogo futuro
+  productService     String    // Descrição do produto/serviço
+  value              Decimal   @db.Decimal(10, 2) // Valor da venda (precisão 10 dígitos, 2 decimais)
+  dataOpportunity    DateTime  @map("data_opportunity") // Data da oportunidade/registro
+  observations       String?
+
+  status             String    @default("Pendente de Aprovação") // 'Pendente de Aprovação', 'Aprovada', 'Rejeitada', 'Em Negociação'
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Relacionamento com Cliente/Parceiro (FK)
+  partnerId          String    @map("cliente_id") // ID do cliente/parceiro que fez a compra
+  partner            Partner   @relation("PartnerSales", fields: [partnerId], references: [id])
+
+  // Relacionamento com Vendedor Responsável (FK)
+  sellerId           String    @map("seller_id") // ID do vendedor responsável
+  seller             User      @relation("UserSales", fields: [sellerId], references: [id])
+
+  @@map("sales") // Nome da tabela no banco de dados
+}

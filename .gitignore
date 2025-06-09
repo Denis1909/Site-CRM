@@ -11,3 +11,13 @@ npm-debug.log*
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Ignorar backups e pastas de build/dependencias em nivel de projeto
+node_modules/
+.env
+backend/node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/src/App - BKP.css
+frontend/src/BKP antes de publicar/
