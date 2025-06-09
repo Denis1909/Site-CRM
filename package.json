@@ -1,0 +1,13 @@
+{
+  "name": "crm-monorepo-root",
+  "version": "1.0.0",
+  "description": "Root package.json for CRM monorepo",
+  "main": "index.js",
+  "scripts": {
+    "start": "echo 'No direct start for root, please cd into backend or frontend'",
+    "build": "echo 'No direct build for root, please cd into frontend'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
