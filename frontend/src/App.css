@@ -4,11 +4,12 @@
 html, body, #root, .App {
     margin: 0;
     padding: 0;
-    width: 100vw;       /* Garante 100% da largura da viewport */
-    height: 100vh;      /* Garante 100% da altura da viewport */
-    overflow: hidden;   /* Evita barras de rolagem indesejadas na raiz do body */
+    width: 100vw;        /* Garante 100% da largura da viewport */
+    min-height: 100vh;   /* Use min-height para permitir que o conteúdo se estenda */
     display: flex;
     flex-direction: column;
+    overflow-y: auto;    /* <--- CORREÇÃO AQUI: Permite rolagem vertical quando necessário */
+    /* Removido o 'height: 100vh;' e 'overflow: hidden;' */
 }
 
 :root {
